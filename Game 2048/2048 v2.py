@@ -1,6 +1,12 @@
 import random
 import os
 import msvcrt as ms
+import math
+
+empty_slot = 1
+full_but_not_lose = 2
+full_and_lose = 3
+score = 0
 
 def draw_border():
     string = ""
@@ -34,6 +40,8 @@ def draw_number(numberList):
 # listOfNumberList : a list of the number lists a.k.a. the table
 def draw_the_table(listOfNumberList):
     os.system("cls")
+    print "SCORE: ", score
+    print "Current state:"
     for i in range(0,len(listOfNumberList)):
         draw_border()
         draw_empty_line()
@@ -41,29 +49,34 @@ def draw_the_table(listOfNumberList):
         draw_empty_line()
     draw_border()
 
-# return false if the table is not full, 
+# return false if the table is not full,
+# 1 is for "still have empty slot"
+# 2 is for "no more but havent lose"
+# 3 is for full and lose
 def check_full_table(listOfNumberList):
     for i in range(0,4):
         for j in range(0,4):
             if listOfNumberList[i][j] == 0:
-                return False
+                return empty_slot
             # still have 2 adjancent equal cell
             #             [i-1][j]
             #  [i][j-1]   [i][j]   [i][j+1]
             #             [i+1][j]
+    for i in range(0,4):
+        for j in range(0,4):
             if i != 0:
                 if listOfNumberList[i][j] == listOfNumberList[i-1][j]:
-                    return False
+                    return full_but_not_lose
             if i != 3:
                 if listOfNumberList[i][j] == listOfNumberList[i+1][j]:
-                    return False
+                    return full_but_not_lose
             if j != 0:
                 if listOfNumberList[i][j] == listOfNumberList[i][j-1]:
-                    return False
+                    return full_but_not_lose
             if j != 3:
                 if listOfNumberList[i][j] == listOfNumberList[i][j+1]:
-                    return False
-    return True
+                    return full_but_not_lose
+    return full_and_lose
 
 # generate a new value in the cell
 def generate_random_cell(listOfNumberList):
@@ -112,7 +125,6 @@ def game_play():
         bonus = ms.getch()
     print 
     while invalid_move(movement) == True:
-        print "The number is: " + str(ord(movement))
         print "Invalid move. Enter next move:",
         
         movement = ms.getch()
@@ -143,6 +155,7 @@ def game_play():
 # Then replace the real one with this
 
 def update_table(table, movement):
+    global score
     t = init_table()
     wayToMove = []
     direction = 0
@@ -162,6 +175,8 @@ def update_table(table, movement):
                 if len(rc) > 1:
                     # if latest element is equal, replace it with the sum
                     if rc[-1] == rc[-2]:
+                        log = int(math.log(rc[-1],2)) + 1
+                        score += (log-1) * rc[-1]
                         s = rc.pop()
                         s += rc.pop()
                         rc.append(s)
@@ -171,6 +186,8 @@ def update_table(table, movement):
                 if len(rc) > 1:
                     # if latest element is equal, replace it with the sum
                     if rc[-1] == rc[-2]:
+                        log = int(math.log(rc[-1],2)) + 1
+                        score += (log-1) * rc[-1]
                         s = rc.pop()
                         s += rc.pop()
                         rc.append(s)
@@ -203,12 +220,13 @@ def win_condition(table):
 ############
 rules()
 table = init_table()
-while check_full_table(table) == False and win_condition(table) == False:
-    print "Current state:"
-    generate_random_cell(table)
+while check_full_table(table) != full_and_lose and win_condition(table) == False:
+    if check_full_table(table) == empty_slot:
+        generate_random_cell(table)
     draw_the_table(table)
     game_play()
 if win_condition(table) == True:
     print "cONGRATULATIONS! YOU WIN!"
 else:
     print "GAME OVER!"
+raw_input("Enter 'Enter' key to leave the game")
