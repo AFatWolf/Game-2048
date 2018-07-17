@@ -3,4 +3,5 @@ Status update:
 16/7/2018: 2018 v1.py
 17/7/2018: 2018 v2.py
   + Can only work on windows cmd console
-  + pretty smooth
+  + Run on cmd: python where/the/game/store
+      or just click on the game
