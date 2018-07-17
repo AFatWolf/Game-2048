@@ -1,4 +1,6 @@
 import random
+import os
+import msvcrt as ms
 
 def draw_border():
     string = ""
@@ -30,7 +32,8 @@ def draw_number(numberList):
         print strToPrint
 
 # listOfNumberList : a list of the number lists a.k.a. the table
-def draw_the_table(listOfNumberList): 
+def draw_the_table(listOfNumberList):
+    os.system("cls")
     for i in range(0,len(listOfNumberList)):
         draw_border()
         draw_empty_line()
@@ -44,6 +47,22 @@ def check_full_table(listOfNumberList):
         for j in range(0,4):
             if listOfNumberList[i][j] == 0:
                 return False
+            # still have 2 adjancent equal cell
+            #             [i-1][j]
+            #  [i][j-1]   [i][j]   [i][j+1]
+            #             [i+1][j]
+            if i != 0:
+                if listOfNumberList[i][j] == listOfNumberList[i-1][j]:
+                    return False
+            if i != 3:
+                if listOfNumberList[i][j] == listOfNumberList[i+1][j]:
+                    return False
+            if j != 0:
+                if listOfNumberList[i][j] == listOfNumberList[i][j-1]:
+                    return False
+            if j != 3:
+                if listOfNumberList[i][j] == listOfNumberList[i][j+1]:
+                    return False
     return True
 
 # generate a new value in the cell
@@ -75,13 +94,42 @@ def rules():
     print "Your mission is to create the number 2048."
     print "Good luck!"
 
+# return True if the move is truely invalid
+def invalid_move(movement):
+    if movement != 'u' and movement != 'd' and movement != 'l' and movement != 'r' and (movement != '\x00' and movement != '\xe0'):
+        return True
+    return False    
+
 # promt user to enter movement key
 def game_play():
     global table
     # enter next move
-    movement = raw_input("Enter nex move:")
-    while movement != 'u' and movement != 'd' and movement != 'l' and movement != 'r':
-        movement = raw_input("Invalid move. Enter next move:")
+    print "Enter next move:",
+    movement = ms.getch()
+    bonus = ''
+    # if its not printable character
+    if ord(movement) < 32 or ord(movement) > 126:
+        bonus = ms.getch()
+    print 
+    while invalid_move(movement) == True:
+        print "The number is: " + str(ord(movement))
+        print "Invalid move. Enter next move:",
+        
+        movement = ms.getch()
+        # same with the above
+        if ord(movement) < 32 or ord(movement) > 126:
+            bonus = ms.getch()
+        print
+        
+    if movement == '\x00' or movement == '\xe0':
+        if ord(bonus) == 72: # up key
+            movement = 'u'
+        elif ord(bonus) == 75:
+            movement = 'l'
+        elif ord(bonus) == 80:
+            movement = 'd'
+        elif ord(bonus) == 77:
+            movement = 'r'
     # update the table
     table = update_table(table, movement)
 
@@ -93,6 +141,7 @@ def game_play():
 # Third ele: [4,4] -> [8]
 # Fourth ele: [8,2]
 # Then replace the real one with this
+
 def update_table(table, movement):
     t = init_table()
     wayToMove = []
@@ -148,6 +197,7 @@ def win_condition(table):
             if table[i][j] == 2048:
                 return True
     return False
+
 ############                        
 # MAIN GAME#
 ############
